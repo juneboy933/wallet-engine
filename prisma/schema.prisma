@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @default(uuid())
+
+  email        String @unique
+  passwordHash String
+
+  wallets Wallet[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Wallet {
+  id String @id @default(uuid())
+
+  userId   String
+  currency String  @default("KES")
+  balance  Decimal @default(0.00) @db.Decimal(20, 2)
+
+  user User @relation(fields: [userId], references: [id])
+
+  transactions  Transaction[]
+  ledgerEntries LedgerEntry[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, currency])
+}
+
+model Transaction {
+  id String @id @default(uuid())
+
+  walletId String
+  type     TransactionType
+  amount   Decimal           @db.Decimal(20, 2)
+  status   TransactionStatus
+
+  reference      String  @unique
+  idempotencyKey String? @unique
+
+  wallet Wallet @relation(fields: [walletId], references: [id])
+
+  ledgerEntries LedgerEntry[]
+
+  createdAt DateTime @default(now())
+
+  @@index([walletId])
+  @@index([reference])
+}
+
+model LedgerEntry {
+  id String @id @default(uuid())
+
+  walletId      String
+  transactionId String
+
+  entryType EntryType
+
+  amount Decimal @db.Decimal(20,2)
+
+  balanceBefore Decimal  @db.Decimal(20, 2)
+  balanceAfter  Decimal  @db.Decimal(20, 2)
+
+  wallet      Wallet      @relation(fields: [walletId], references: [id])
+  transaction Transaction @relation(fields: [transactionId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([walletId])
+  @@index([transactionId])
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAW
+  TRANSFER
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum EntryType {
+  CREDIT
+  DEBIT
+}
