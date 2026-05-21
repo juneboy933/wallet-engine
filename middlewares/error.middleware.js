@@ -3,6 +3,7 @@ import logger from "../config/winston.config.js";
 
 export const errorMiddleware = (err, req, res, next) => {
   logger.error("Unhandled Application Error", {
+    requestId: req.id,
     message: err.message,
     stack: err.stack,
     method: req.method,
@@ -11,6 +12,7 @@ export const errorMiddleware = (err, req, res, next) => {
 
   return res.status(err.statusCode || 500).json({
     success: false,
+    requestId: req.id,
     message:
       env.NODE_ENV === "production" ? "Internal Server Error" : err.message,
   });

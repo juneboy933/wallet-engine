@@ -6,7 +6,7 @@ const transports = [
   new winston.transports.File({ filename: "logs/combined.log" }),
 ];
 
-if (env.NODE_ENV === "development") {
+if (env.NODE_ENV === "development" || env.NODE_ENV === "test") {
   transports.push(
     new winston.transports.Console({
       format: winston.format.combine(
@@ -18,7 +18,8 @@ if (env.NODE_ENV === "development") {
 }
 
 const logger = winston.createLogger({
-  level: "info",
+  level: env.LOG_LEVEL,
+  defaultMeta: { service: "wallet-engine" },
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.json(),

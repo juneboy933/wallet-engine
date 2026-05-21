@@ -1,5 +1,9 @@
 import express from "express";
+import env from "./config/schema.config.js";
 import { requestLogger } from "./middlewares/request-logger.middleware.js";
+import { requestIdMiddleware } from "./middlewares/request-id.middleware.js";
+import { securityMiddleware } from "./middlewares/security.middleware.js";
+import { globalRateLimiter } from "./middlewares/rate-limit.middleware.js";
 import prisma from "./config/prisma.config.js";
 import redis from "./config/redis.config.js";
 import logger from "./config/winston.config.js";
@@ -10,9 +14,13 @@ import walletRoutes from "./modules/wallet/wallet.routes.js";
 import tranferRoutes from "./modules/transfer/transfer.routes.js";
 
 const app = express();
+app.set("trust proxy", env.TRUST_PROXY);
 
-// Body parser middleware
+// Security and request middleware
 app.disable("x-powered-by");
+app.use(requestIdMiddleware);
+app.use(securityMiddleware);
+app.use(globalRateLimiter);
 app.use(express.json({ limit: "32kb" }));
 app.use(express.urlencoded({ extended: true, limit: "32kb" }));
 

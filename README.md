@@ -65,7 +65,11 @@ Required variables:
 PORT=3000
 NODE_ENV=development
 JWT_SECRET=replace-with-at-least-32-characters
+CORS_ORIGIN=http://localhost:3000
+LOG_LEVEL=info
+TRUST_PROXY=false
 REDIS_URL=redis://localhost:6379
+TEST_REDIS_URL=redis://localhost:6379
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/wallet_engine?schema=public
 TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/wallet_engine_test?schema=public
 ```
@@ -214,6 +218,22 @@ npm run test:coverage
 ```
 
 The tests clear wallet, transaction, ledger, user, and Redis state between cases. Use a dedicated test database only.
+
+## CI / CD
+
+This repo includes a GitHub Actions workflow at `.github/workflows/ci.yml`.
+It runs on push and pull request events, and it:
+
+- installs dependencies
+- generates the Prisma client
+- starts PostgreSQL and Redis services
+- runs the integration tests
+
+CI/CD means Continuous Integration / Continuous Delivery:
+
+- Continuous Integration automatically builds and tests every change when code is pushed or reviewed.
+- Continuous Delivery keeps the application deployable by validating code, migrations, and tests before merge.
+- In this project, the workflow validates database migrations and runtime behavior so changes can be published safely.
 
 ## Financial Safety Notes
 

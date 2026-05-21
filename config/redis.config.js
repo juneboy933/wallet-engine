@@ -2,7 +2,8 @@ import { Redis } from "ioredis";
 import env from "./schema.config.js";
 import logger from "./winston.config.js";
 
-const redis = new Redis(env.REDIS_URL, {
+const redisUrl = env.REDIS_URL;
+const redis = new Redis(redisUrl, {
   maxRetriesPerRequest: 3,
 
   retryStrategy(times) {
